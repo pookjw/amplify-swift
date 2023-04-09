@@ -79,10 +79,14 @@ struct HostedUISignInHelper: DefaultLogger {
 
             switch authNState {
             case .signedIn:
-                if case .sessionEstablished = authZState {
-                   return AuthSignInResult(nextStep: .done)
-                }
-
+              switch authZState {
+              case .error(let error):
+                throw error
+              case .sessionEstablished:
+                return AuthSignInResult(nextStep: .done)
+              default:
+                break
+              }
             case .error(let error):
                 await waitForSignInCancel()
                 throw error.authError
